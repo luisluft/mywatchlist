@@ -1,0 +1,3 @@
+[submodule "laradock-desafio-jera"]
+	path = laradock-desafio-jera
+	url = git@github.com:luisluft/laradock.git
