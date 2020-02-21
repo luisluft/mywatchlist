@@ -24,6 +24,6 @@
         "vue-template-compiler": "^2.6.10"
     },
     "dependencies": {
-        "vue-the-mask": "^0.11.1"
+        "v-mask": "^2.0.2"
     }
 }

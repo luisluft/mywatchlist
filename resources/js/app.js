@@ -27,6 +27,15 @@ Vue.component('example-component', require('./components/ExampleComponent.vue').
  * or customize the JavaScript scaffolding to fit your unique needs.
  */
 
+// v-mask plugin start
+import Vue from 'vue'
+import VueMask from 'v-mask'
+Vue.use(VueMask);
+
 const app = new Vue({
     el: '#app',
+    data: {
+        inputVal: '',
+    }
 });
+// v-mask plugin end
