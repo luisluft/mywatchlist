@@ -1,23 +1,61 @@
 @extends('layouts.app')
 
 @section('content')
-<div class="container">
-    <div class="row justify-content-center">
-        <div class="col-md-8">
-            <div class="card">
-                <div class="card-header">Dashboard</div>
+    <div class="container">
+        <!-- Button to Open the Modal -->
+        <button id="newProfileButton" type="button" class="btn btn-secondary btn-block" data-toggle="modal" data-target="newProfile" onclick="newProfile()" autofocus>
+            New Profile
+        </button>
 
-                <div class="card-body">
-                    @if (session('status'))
-                        <div class="alert alert-success" role="alert">
-                            {{ session('status') }}
+        @foreach($profiles as $profile)
+            <a class="btn btn-primary btn-block" href="/profile/{{$profile->id}}" role="button">{{ $profile->title }}</a>
+    @endforeach
+
+    <!-- Create client modal start -->
+        <div class="modal" id="newProfile">
+            <div class="modal-dialog">
+                <div class="modal-content">
+
+                    <!-- Modal Header -->
+                    <div class="modal-header">
+                        <h4 class="modal-title">New Profile</h4>
+                        <button type="button" class="close" data-dismiss="modal">&times;</button>
+                    </div>
+
+                    <!-- Modal body -->
+                    <div class="modal-body">
+
+                        <!--Input start -->
+                        <div class="form-group">
+                            <label for="name" class="control-label">Name</label>
+                            <div class="input-group">
+                                <input name="name" type="text" class="form-control" id="name" required>
+                            </div>
                         </div>
-                    @endif
+                        <!--Input end -->
 
-                    You are logged in!
+                    </div>
+
+                    <!-- Modal footer -->
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-danger" data-dismiss="modal">Fechar</button>
+                        <button type="button" class="btn btn-primary" onclick="createClient()">Salvar</button>
+                    </div>
                 </div>
             </div>
         </div>
+        <!-- Create client modal end -->
     </div>
-</div>
+@endsection
+
+@section('javascript')
+    <script>
+
+        // Show modal page
+        function newProfile() {
+            $('#newProfile').modal('show');
+        }
+
+
+    </script>
 @endsection

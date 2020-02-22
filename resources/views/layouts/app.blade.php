@@ -76,5 +76,10 @@
             @yield('content')
         </main>
     </div>
+
+    <!-- Page specific js -->
+    @hasSection('javascript')
+        @yield('javascript')
+    @endif
 </body>
 </html>
