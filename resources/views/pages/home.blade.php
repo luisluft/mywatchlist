@@ -48,7 +48,6 @@
 @section('javascript')
     <script>
 
-
         new Vue({
             el:      '#scope',
             data:    {
