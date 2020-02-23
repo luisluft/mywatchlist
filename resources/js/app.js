@@ -32,10 +32,10 @@ import Vue from 'vue'
 import VueMask from 'v-mask'
 Vue.use(VueMask);
 
-const app = new Vue({
-    el: '#app',
-    data: {
-        inputVal: '',
-    }
-});
+// const app = new Vue({
+//     el: '#app',
+//     data: {
+//         inputVal: '',
+//     }
+// });
 // v-mask plugin end

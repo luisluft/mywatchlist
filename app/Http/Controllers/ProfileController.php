@@ -25,8 +25,16 @@ class ProfileController extends Controller
         return view('pages.profile')->with('movies', $movies);
     }
 
-    public function store($request)
+    public function store(Request $request)
     {
-        var_dump($request);
+        $user_id  = auth()->user()->id;
+        $profile_title = $request->input('formData');
+
+        $profile = new Profile();
+        $profile->user_id = $user_id;
+        $profile->title = $profile_title;
+        $profile->save();
+
+        return "saved profile $profile->title successfully.";
     }
 }

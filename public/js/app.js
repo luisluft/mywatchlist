@@ -49973,13 +49973,13 @@ vue__WEBPACK_IMPORTED_MODULE_0___default.a.component('example-component', __webp
 
 
 
-vue__WEBPACK_IMPORTED_MODULE_0___default.a.use(v_mask__WEBPACK_IMPORTED_MODULE_1__["default"]);
-var app = new vue__WEBPACK_IMPORTED_MODULE_0___default.a({
-  el: '#app',
-  data: {
-    inputVal: ''
-  }
-}); // v-mask plugin end
+vue__WEBPACK_IMPORTED_MODULE_0___default.a.use(v_mask__WEBPACK_IMPORTED_MODULE_1__["default"]); // const app = new Vue({
+//     el: '#app',
+//     data: {
+//         inputVal: '',
+//     }
+// });
+// v-mask plugin end
 
 /***/ }),
 

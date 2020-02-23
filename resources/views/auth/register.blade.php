@@ -90,3 +90,14 @@
     </div>
 </div>
 @endsection
+
+@section('javascript')
+    <script>
+        const app = new Vue({
+            el: '#app',
+            data: {
+                inputVal: '',
+            }
+        });
+    </script>
+@endsection
