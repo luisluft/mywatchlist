@@ -27,14 +27,27 @@ class ProfileController extends Controller
 
     public function store(Request $request)
     {
-        $user_id  = auth()->user()->id;
+        $user_id       = auth()->user()->id;
         $profile_title = $request->input('formData');
 
-        $profile = new Profile();
+        $profile          = new Profile();
         $profile->user_id = $user_id;
-        $profile->title = $profile_title;
+        $profile->title   = $profile_title;
         $profile->save();
 
-        return "saved profile $profile->title successfully.";
+        return $profile->id;
+    }
+
+    /**
+     * Inserts the user created session_id in the table for later usage in watchlaters
+     */
+    public function update(Request $request)
+    {
+        $profile_id          = $request->input('profile_id');
+        $profile             = Profile::find($profile_id);
+        $profile->session_id = $request->session_id;
+        $profile->save();
+
+        return "saved session: $profile->session_id into profile with id: $profile_id";
     }
 }
