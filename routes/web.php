@@ -23,4 +23,6 @@ Route::get('/profile/{id}', 'ProfileController@index')->name('profile.show');
 
 Route::post('profile', 'ProfileController@store')->name('profiles.store');
 
+Route::post('profile/session', 'ProfileController@getProfileData')->name('profiles.getSessionId');
+
 Route::put('profile', 'ProfileController@update')->name('profiles.update');

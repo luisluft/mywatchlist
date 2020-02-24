@@ -50,4 +50,14 @@ class ProfileController extends Controller
 
         return "saved session: $profile->session_id into profile with id: $profile_id";
     }
+
+    public function getProfileData(Request $request)
+    {
+        $profile_id = $request->profile_id;
+        $profile = Profile::find($profile_id);
+        $session_id = $profile->session_id;
+        $user_id = $profile->user->id;
+
+        return ['session_id'=>$session_id, 'user_id'=> $user_id ];
+    }
 }

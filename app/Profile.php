@@ -30,4 +30,9 @@ class Profile extends Model
     {
         return $this->hasMany(Movie::class);
     }
+
+    public function user()
+    {
+        return $this->belongsTo(User::class);
+    }
 }
