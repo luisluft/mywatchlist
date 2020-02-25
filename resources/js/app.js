@@ -30,7 +30,10 @@ Vue.component('example-component', require('./components/ExampleComponent.vue').
 // v-mask plugin start
 import Vue from 'vue'
 import VueMask from 'v-mask'
+import AsyncComputed from 'vue-async-computed'
+
 Vue.use(VueMask);
+Vue.use(AsyncComputed);
 
 // const app = new Vue({
 //     el: '#app',
