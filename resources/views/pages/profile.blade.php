@@ -16,8 +16,11 @@
 
                 <div v-show="loaded2" class="loader"></div>
 
-                <div class="card col-md-4" v-for="item in movies.results">
+                <div class="card col-md-4" v-for="(item, index) in movies.results">
                     <img class="card-img-top" :src="imageUrl + item.poster_path" alt="">
+                    <button id="removeWatchlater" class="btn btn-danger" v-on:click="removeWatchlater(item.id, index); fetchWatchLater();">
+                        Remove
+                    </button>
                     <div class="card-body">
                         <h5 class="card-title">@{{ item.original_title }}</h5>
                         <p class="card-text">@{{ item.overview }}</p>
@@ -38,17 +41,16 @@
                             <div class="modal-body">
                                 <div id="scope" class="row">
                                     <div v-show="loaded" class="loader"></div>
-
                                     <div class="card col-md-4" v-for="(item, index) in items.results">
                                         <img class="card-img-top" :src="imageUrl + item.poster_path" alt="">
-                                        <button id="addWatchlater" type="button" class="btn btn-primary" v-on:click="addWatchlater(item.id, index); fetchWatchLater();">Watchlater
+                                        <button id="addWatchlater" type="button" class="btn btn-primary" v-on:click="addWatchlater(item.id, index); fetchWatchLater();">
+                                            Watchlater
                                         </button>
                                         <div class="card-body">
                                             <h5 class="card-title">@{{ item.original_title }}</h5>
                                             <p class="card-text text-justify">@{{ item.overview }}</p>
                                         </div>
                                     </div>
-
                                 </div>
                             </div>
 
@@ -97,10 +99,11 @@
                     }).then((response) => {
                         return response.data.session_id;
                     });
-                },},
+                },
+            },
             methods:       {
                 // Fetch data from the API
-                fetchWatchLater: function () {
+                fetchWatchLater:  function () {
                     let vm = this;
                     let url = this.baseUrl + '/account/' + this.user_id + '/watchlist/movies?api_key=' + this.apiKey + '&language=en-US&session_id=' + '9a49fe4fa1439f6bee09996915b15c6715e959f7' + '&sort_by=created_at.desc';
                     // Make a request for a user with a given ID
@@ -108,15 +111,12 @@
                         // handle success
                         vm.movies = response.data;
                         vm.loaded2 = false;
-
                     }).catch(function (error) {
                         // handle error
                         console.log(error);
-                    }).then(function () {
-                        // always executed
                     });
                 },
-                searchMovie:     function () {
+                searchMovie:      function () {
                     $('#newProfile').modal('show');
                     let vm = this;
                     let url = this.baseUrl + '/search/movie?api_key=' + this.apiKey + '&language=en-US&query=' + this.queryString + '&include_adult=false';
@@ -133,7 +133,7 @@
                             console.log(error);
                         });
                 },
-                addWatchlater:   function (mediaId, index) {
+                addWatchlater:    function (mediaId, index) {
                     // removes the movie added to watchlater from the search results frontend
                     this.items.results.splice(index, 1);
                     let url = this.baseUrl + '/account/' + this.user_id + '/watchlist?api_key=' + this.apiKey + '&session_id=' + this.session_id;
@@ -147,24 +147,21 @@
                     }).catch(function (error) {
                         console.log(error);
                     });
+                },
+                removeWatchlater: function (mediaId, index) {
+                    // removes the movie added to watchlater from the search results frontend
+                    let url = this.baseUrl + '/account/' + this.user_id + '/watchlist?api_key=' + this.apiKey + '&session_id=' + this.session_id;
 
-                    // axios.post('/profile/data', {
-                    //     profile_id: this.profile_id,
-                    // }).then(function (response) {
-                    //     let url = vm.baseUrl + '/account/' + user_id + '/watchlist?api_key=' + vm.apiKey + '&session_id=' + session_id;
-                    //     axios.post(url, {
-                    //         "media_type": "movie",
-                    //         "media_id":   mediaId,
-                    //         "watchlist":  true
-                    //     }).then(function (response) {
-                    //         // this.items.splice(index,1);
-                    //     }).catch(function (error) {
-                    //         console.log(error);
-                    //     });
-                    // }).catch(function (error) {
-                    //     console.log(error);
-                    // });
-                }
+                    axios.post(url, {
+                        "media_type": "movie",
+                        "media_id":   mediaId,
+                        "watchlist":  false
+                    }).then(function (response) {
+                        // this.items.splice(index,1);
+                    }).catch(function (error) {
+                        console.log(error);
+                    });
+                },
             },
         });
 
