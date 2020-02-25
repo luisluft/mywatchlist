@@ -6,14 +6,28 @@
             <div class="row justify-content-center">
                 <!-- Button to Open the Modal -->
                 <input v-model=queryString type="text" class="col-sm-8">
-                <button id="searchTMDB" type="button" class="btn btn-primary col-sm-2" data-toggle="modal" data-target="newProfile" v-on:click="searchTMDB" autofocus>
+                <button id="searchMovie" type="button" class="btn btn-primary col-sm-2" data-toggle="modal" data-target="newProfile" v-on:click="searchMovie" autofocus>
                     Search
                 </button>
+
+                <button id="fetchWatchLater" type="button" class="btn btn-primary mt-2 col-sm-12 text-center" data-toggle="modal" data-target="newProfile" v-on:click="fetchWatchLater" autofocus>
+                    Show Watchlater List
+                </button>
+
+                <div v-show="loaded2" class="loader"></div>
+
+                <div class="card col-md-4" v-for="item in movies.results">
+                    <img class="card-img-top" :src="imageUrl + item.poster_path" alt="">
+                    <div class="card-body">
+                        <h5 class="card-title">@{{ item.original_title }}</h5>
+                        <p class="card-text">@{{ item.overview }}</p>
+                    </div>
+                </div>
 
                 <!-- modal start -->
                 <div class="modal" id="newProfile">
                     <div class="modal-dialog modal-xl">
-                        <div class="modal-content modal-xl">
+                        <div class="modal-content">
                             <!-- Modal Header -->
                             <div class="modal-header">
                                 <h4 class="modal-title">Results for "@{{ queryString }}"</h4>
@@ -27,11 +41,11 @@
 
                                     <div class="card col-md-4" v-for="(item, index) in items.results">
                                         <img class="card-img-top" :src="imageUrl + item.poster_path" alt="">
-                                        <button id="addWatchlater" type="button" class="btn btn-primary" v-on:click="addWatchlater(item.id, index)">Watchlater
+                                        <button id="addWatchlater" type="button" class="btn btn-primary" v-on:click="addWatchlater(item.id, index); fetchWatchLater();">Watchlater
                                         </button>
                                         <div class="card-body">
                                             <h5 class="card-title">@{{ item.original_title }}</h5>
-                                            <p class="card-text">@{{ item.overview }}</p>
+                                            <p class="card-text text-justify">@{{ item.overview }}</p>
                                         </div>
                                     </div>
 
@@ -54,20 +68,58 @@
 @section('javascript')
     <script>
         new Vue({
-            el:      '#scope',
-            data:    {
+            el:            '#scope',
+            data:          {
                 profileName: '',
                 queryString: '',
-                loaded:      true,
                 items:       [],
+                movies:      [],
                 imageUrl:    'https://image.tmdb.org/t/p/w342',
+                baseUrl:     'https://api.themoviedb.org/3',
+                apiKey:      '{{ env('TMDB_API_KEY') }}',
+                profile_id:  window.location.pathname.split('/')[2],
+                loaded:      true,
+                loaded2:     true,
+                user_id:     '', // 1
+                session_id:  '', // 6ef084b1672a5fbdf9f931ed73fcf1c849aaa274
             },
-            methods: {
-                searchTMDB:    function () {
+            asyncComputed: {
+                async getUserId() {
+                    this.user_id = await axios.post('/profile/data', {
+                        profile_id: this.profile_id,
+                    }).then((response) => {
+                        return response.data.user_id;
+                    });
+                },
+                async getSessionId() {
+                    this.session_id = await axios.post('/profile/data', {
+                        profile_id: this.profile_id,
+                    }).then((response) => {
+                        return response.data.session_id;
+                    });
+                },},
+            methods:       {
+                // Fetch data from the API
+                fetchWatchLater: function () {
+                    let vm = this;
+                    let url = this.baseUrl + '/account/' + this.user_id + '/watchlist/movies?api_key=' + this.apiKey + '&language=en-US&session_id=' + '9a49fe4fa1439f6bee09996915b15c6715e959f7' + '&sort_by=created_at.desc';
+                    // Make a request for a user with a given ID
+                    axios.get(url).then(function (response) {
+                        // handle success
+                        vm.movies = response.data;
+                        vm.loaded2 = false;
+
+                    }).catch(function (error) {
+                        // handle error
+                        console.log(error);
+                    }).then(function () {
+                        // always executed
+                    });
+                },
+                searchMovie:     function () {
                     $('#newProfile').modal('show');
                     let vm = this;
-                    let url = 'https://api.themoviedb.org/3/search/movie?api_key=' + '{{env('TMDB_API_KEY')}}' + '&language=en-US&query=' + this.queryString + '&include_adult=false';
-                    console.log(url);
+                    let url = this.baseUrl + '/search/movie?api_key=' + this.apiKey + '&language=en-US&query=' + this.queryString + '&include_adult=false';
 
                     // make the request
                     axios.get(url)
@@ -81,30 +133,37 @@
                             console.log(error);
                         });
                 },
-                addWatchlater: function (mediaId, index) {
-                    let profile_id = window.location.pathname.split('/')[2];
-                    // removes the movie added to watchlater from the search results
+                addWatchlater:   function (mediaId, index) {
+                    // removes the movie added to watchlater from the search results frontend
                     this.items.results.splice(index, 1);
-                    axios.post('/profile/session', {
-                        profile_id: profile_id,
+                    let url = this.baseUrl + '/account/' + this.user_id + '/watchlist?api_key=' + this.apiKey + '&session_id=' + this.session_id;
+
+                    axios.post(url, {
+                        "media_type": "movie",
+                        "media_id":   mediaId,
+                        "watchlist":  true
                     }).then(function (response) {
-                        let session_id = response.data.session_id;
-                        let user_id = response.data.user_id;
-                        let url = 'https://api.themoviedb.org/3/account/' + user_id + '/watchlist?api_key=' + '{{ env('TMDB_API_KEY') }}' + '&session_id=' + session_id;
-                        console.log(url);
-                        axios.post(url, {
-                            "media_type": "movie",
-                            "media_id":   mediaId,
-                            "watchlist":  true
-                        }).then(function (response) {
-                            // this.items.splice(index,1);
-                        })
-                            .catch(function (error) {
-                                console.log(error);
-                            });
+                        // this.items.splice(index,1);
                     }).catch(function (error) {
                         console.log(error);
                     });
+
+                    // axios.post('/profile/data', {
+                    //     profile_id: this.profile_id,
+                    // }).then(function (response) {
+                    //     let url = vm.baseUrl + '/account/' + user_id + '/watchlist?api_key=' + vm.apiKey + '&session_id=' + session_id;
+                    //     axios.post(url, {
+                    //         "media_type": "movie",
+                    //         "media_id":   mediaId,
+                    //         "watchlist":  true
+                    //     }).then(function (response) {
+                    //         // this.items.splice(index,1);
+                    //     }).catch(function (error) {
+                    //         console.log(error);
+                    //     });
+                    // }).catch(function (error) {
+                    //     console.log(error);
+                    // });
                 }
             },
         });

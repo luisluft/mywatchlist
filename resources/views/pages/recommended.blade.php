@@ -2,9 +2,9 @@
 
 @section('content')
     <div id="scope" class="row">
-        <div v-show="loaded" class="loader"></div>
+        <div v-show="loaded2" class="loader"></div>
 
-        <div class="card col-md-3" v-for="item in items.results">
+        <div class="card col-md-3" v-for="item in movies.results">
             <img class="card-img-top" :src="imageUrl + item.poster_path" alt="">
                 <a href="#" class="btn btn-primary">Adicionar</a>
             <div class="card-body">
@@ -20,11 +20,11 @@
         new Vue({
             el:      "#scope",
             data:    {
-                items:    [],
+                movies:    [],
                 baseUrl:  'https://api.themoviedb.org/3',
                 apiKey:   '{{ env('TMDB_API_KEY') }}',
                 imageUrl: 'https://image.tmdb.org/t/p/w342',
-                loaded:   true
+                loaded2:   true
             },
             created: function () {
                 // Create the method you made below
@@ -35,14 +35,13 @@
                 fetchData: function () {
                     let vm = this;
                     let url = this.baseUrl + '/discover/movie?api_key=' + this.apiKey + '&sort_by=popularity.desc';
-                    console.log(url);
 
                     // Make a request for a user with a given ID
-                    axios.get(this.baseUrl + '/discover/movie?api_key=' + this.apiKey + '&sort_by=popularity.desc')
+                    axios.get(url)
                         .then(function (response) {
                             // handle success
-                            vm.items = response.data;
-                            vm.loaded = false;
+                            vm.movies = response.data;
+                            vm.loaded2 = false;
 
                         })
                         .catch(function (error) {
