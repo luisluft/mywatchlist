@@ -1,16 +1,22 @@
 @extends('layouts.app')
 
 @section('content')
+    {{--Display authorization steps only if user has not yet authorized--}}
+    @if(!$user->access_token)
+        <div class="row justify-content-center" id="app">
+            <h2 class="col-sm-12 text-center"> Authorize Account Creation</h2>
+            <button class="btn btn-primary col-sm-8 m-1" data-toggle="modal" data-target="newProfile" v-on:click="createRequestToken" autofocus>
+                Step 1
+            </button>
+            <button class="btn btn-primary col-sm-8 m-1" data-toggle="modal" data-target="newProfile" v-on:click="fetchAccessToken" autofocus>
+                Step 2
+            </button>
+        </div>
+    @endif
 
-    <div class="row justify-content-center" id="app">
-        <h2 class="col-sm-12 text-center"> Authorize Account Creation</h2>
-        <button class="btn btn-primary col-sm-8 m-1" data-toggle="modal" data-target="newProfile" v-on:click="createRequestToken" autofocus>
-            Step 1
-        </button>
-        <button class="btn btn-primary col-sm-8 m-1" data-toggle="modal" data-target="newProfile" v-on:click="fetchAccessToken" autofocus>
-            Step 2
-        </button>
-    </div>
+    @if($user->access_token)
+        <h2>user has access token</h2>
+    @endif
 
 @endsection
 
@@ -66,17 +72,18 @@
                     }).then(function (response) {
                         vm.access_token = (response.data.access_token);
                         axios({
-                            method:          'post',
-                            url:             vm.appUrl + '/access_token',
-                            data:            {
+                            method: 'post',
+                            url:    vm.appUrl + '/access_token',
+                            data:   {
                                 access_token: vm.access_token,
                             },
                         }).then(function (response) {
                             console.log(response.data);
+                            document.location.reload(true);
                         });
                     }).catch(function (error) {
                         console.log('Could not save access token, error= ');
-                        console.log(error);
+                        alert(error);
                     });
                 },
             },

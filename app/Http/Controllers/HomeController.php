@@ -27,8 +27,9 @@ class HomeController extends Controller
     {
         $user_id  = auth()->user()->id;
         $profiles = User::find($user_id)->profiles;
-        //  TODO SEND USER WITH VIEW TO VERIFY IF USER HAS ACCESS TOKEN OR NOT TO DISPLAY STEPS IN VIEW
-        return view('pages.home')->with('profiles', $profiles);
+        $user = User::find($user_id);
+
+        return view('pages.home')->with('profiles', $profiles)->with('user', $user);
     }
 
     public function saveAccessToken(Request $request)
