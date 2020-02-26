@@ -27,15 +27,15 @@ class ProfileController extends Controller
 
     public function store(Request $request)
     {
-        $user_id       = auth()->user()->id;
-        $profile_title = $request->input('formData');
-
+        $user_id          = auth()->user()->id;
+        $profile_title    = $request->profile_title;
         $profile          = new Profile();
         $profile->user_id = $user_id;
+        $profile->list_id = $request->list_id;
         $profile->title   = $profile_title;
         $profile->save();
 
-        return $profile->id;
+        return "saved profile with list_id = $request->list_id into the user with id = $user_id";
     }
 
     /**
@@ -51,13 +51,4 @@ class ProfileController extends Controller
         return "saved session: $profile->session_id into profile with id: $profile_id";
     }
 
-    public function getProfileData(Request $request)
-    {
-        $profile_id = $request->profile_id;
-        $profile = Profile::find($profile_id);
-        $session_id = $profile->session_id;
-        $user_id = $profile->user->id;
-
-        return ['session_id'=>$session_id, 'user_id'=> $user_id ];
-    }
 }

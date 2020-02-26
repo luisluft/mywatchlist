@@ -41,4 +41,13 @@ class HomeController extends Controller
 
         return "saved $request->access_token into user with id = $user_id";
     }
+
+    public function getUserAccessToken()
+    {
+        $user_id      = auth()->user()->id;
+        $user         = User::find($user_id);
+        $access_token = $user->access_token;
+
+        return ['access_token' => $access_token];
+    }
 }

@@ -16,7 +16,7 @@ class CreateProfilesTable extends Migration
         Schema::create('profiles', function (Blueprint $table) {
             $table->bigIncrements('id');
             $table->unsignedBigInteger('user_id');
-            $table->string('session_id'); // used by tmdb api to store watchlaters
+            $table->string('list_id'); // used by tmdb api to store media in a list
             $table->text('title');
             $table->timestamps();
         });

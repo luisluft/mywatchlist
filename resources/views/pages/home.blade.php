@@ -1,9 +1,9 @@
 @extends('layouts.app')
 
 @section('content')
-    {{--Display authorization steps only if user has not yet authorized--}}
-    @if(!$user->access_token)
-        <div class="row justify-content-center" id="app">
+    <div class="row justify-content-center" id="app">
+        {{--Display authorization steps only if user has not yet authorized--}}
+        @if(!$user->access_token)
             <h2 class="col-sm-12 text-center"> Authorize Account Creation</h2>
             <button class="btn btn-primary col-sm-8 m-1" data-toggle="modal" data-target="newProfile" v-on:click="createRequestToken" autofocus>
                 Step 1
@@ -11,13 +11,57 @@
             <button class="btn btn-primary col-sm-8 m-1" data-toggle="modal" data-target="newProfile" v-on:click="fetchAccessToken" autofocus>
                 Step 2
             </button>
-        </div>
-    @endif
+        @endif
 
-    @if($user->access_token)
-        <h2>user has access token</h2>
-    @endif
+    <!--Display normal page once user has access token-->
+        @if($user->access_token)
+        <!-- Button to Open the Modal -->
+            <div class="col-sm-8 text-center">
+                <button id="newProfileButton" type="button" class="btn btn-secondary btn-block m-1" v-on:click="openModal" autofocus>
+                    New Profile
+                </button>
+            </div>
 
+            @foreach($profiles as $profile)
+                <div class="col-sm-8 text-center">
+                    <a class="btn btn-primary btn-block m-1" href="/profile/{{$profile->id}}" role="button">{{ $profile->title }}</a>
+                </div>
+            @endforeach
+
+        <!-- Modal start -->
+            <div class="modal" id="newProfile">
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <!-- Modal Header -->
+                        <div class="modal-header">
+                            <h4 class="modal-title">New Profile</h4>
+                            <button type="button" class="close" data-dismiss="modal">&times;</button>
+                        </div>
+
+                        <!-- Modal body -->
+                        <div class="modal-body">
+                            <!--Input start -->
+                            <div class="form-group">
+                                <label for="name" class="control-label">Name</label>
+                                <div class="input-group">
+                                    <input v-model="profile_title" name="name" type="text" class="form-control" id="name" required>
+                                </div>
+                            </div>
+                            <!--Input end -->
+                        </div>
+
+                        <!-- Modal footer -->
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-danger" data-dismiss="modal">Fechar</button>
+                            <button type="button" class="btn btn-primary" v-on:click="addProfile">Salvar</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- Modal end -->
+        @endif
+
+    </div>
 @endsection
 
 @section('javascript')
@@ -25,24 +69,60 @@
         new Vue({
             el:      '#app',
             data:    {
-                authorizationLoaded:    true,
-                readAccessToken:        '{{ env('TMDB_READ_ACCESS_TOKEN') }}',
-                appUrl:                 '{{ env('APP_URL') }}' + '/home',
-                authorizedRequestToken: window.location.pathname.split('/')[2],
-                request_token:          '',
-                access_token:           '{{ $user->access_token }}',
-                api_base_url:           '{{ env('TMDB_BASE_URL') }}',
-            },
-            created: function () {
+                profile_title:       '',
+                authorizationLoaded: true,
+                readAccessToken:     '{{ env('TMDB_READ_ACCESS_TOKEN') }}',
+                appUrl:              '{{ env('APP_URL') }}' + '/home',
+                request_token:       '',
+                access_token:        '{{ $user->access_token }}',
+                api_base_url:        '{{ env('TMDB_BASE_URL') }}',
             },
             methods: {
+                addProfile:         function () {
+                    let vm = this;
+                    axios({
+                        method:  'post',
+                        url:     vm.api_base_url + '/list',
+                        data:    {
+                            "name":      vm.profile_title,
+                            "iso_639_1": "en",
+                            public:      false,
+                        },
+                        headers: {
+                            'content-type':  'application/json;charset=utf-8',
+                            'authorization': 'Bearer ' + vm.access_token,
+                        },
+
+                    }).then(function (response) {
+                        //    saves the new list to the database table profiles
+                        let list_id = response.data.id;
+                        axios({
+                            method: 'post',
+                            url:    '{{ route('profile.store') }}',
+                            data:   {
+                                list_id:       list_id,
+                                profile_title: vm.profile_title,
+                            }
+                        }).then(function (response) {
+                            document.location.reload(true);
+                        }).catch(function (error) {
+                            console.log("could not send post to profile with error = " + error);
+                        });
+                    }).catch(function (error) {
+                        console.log(error);
+                        console.log(error.data.status_message);
+                    });
+                },
+                openModal:          function () {
+                    $('#newProfile').modal('show');
+                },
                 createRequestToken: function () {
                     vm = this;
                     this.authorizationLoaded = false;
                     // 1. Create new request token
                     axios({
                         method:          'post',
-                        url:             vm.api_base_url +'/auth/request_token',
+                        url:             vm.api_base_url + '/auth/request_token',
                         withCredentials: false,
                         headers:         {
                             'Content-Type':  "application/json;charset=utf-8",

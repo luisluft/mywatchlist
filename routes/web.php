@@ -21,9 +21,12 @@ Route::get('/home', 'HomeController@index')->name('home');
 
 Route::get('/profile/{id}', 'ProfileController@index')->name('profile.show');
 
-Route::post('profile', 'ProfileController@store')->name('profiles.store');
+Route::get('/home/access_token', 'HomeController@getUserAccessToken')->name('get.access_token');
 
-Route::post('home/access_token', 'HomeController@saveAccessToken')->name('home.access_token');
+Route::post('home/access_token', 'HomeController@saveAccessToken')->name('put.access_token');
+
+Route::post('profile', 'ProfileController@store')->name('profile.store');
+
 
 Route::post('profile/data', 'ProfileController@getProfileData')->name('profiles.getProfileData');
 
