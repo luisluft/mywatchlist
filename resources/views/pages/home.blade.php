@@ -30,7 +30,8 @@
                 appUrl:                 '{{ env('APP_URL') }}' + '/home',
                 authorizedRequestToken: window.location.pathname.split('/')[2],
                 request_token:          '',
-                access_token:           '',
+                access_token:           '{{ $user->access_token }}',
+                api_base_url:           '{{ env('TMDB_BASE_URL') }}',
             },
             created: function () {
             },
@@ -41,7 +42,7 @@
                     // 1. Create new request token
                     axios({
                         method:          'post',
-                        url:             'https://api.themoviedb.org/4/auth/request_token',
+                        url:             vm.api_base_url +'/auth/request_token',
                         withCredentials: false,
                         headers:         {
                             'Content-Type':  "application/json;charset=utf-8",
@@ -60,7 +61,7 @@
                     let vm = this;
                     axios({
                         method:          'post',
-                        url:             'https://api.themoviedb.org/4/auth/access_token\n',
+                        url:             vm.api_base_url + '/auth/access_token',
                         data:            {
                             request_token: this.request_token,
                         },
@@ -70,12 +71,12 @@
                             'Authorization': "Bearer " + this.readAccessToken,
                         },
                     }).then(function (response) {
-                        vm.access_token = (response.data.access_token);
+                        let access_token = (response.data.access_token);
                         axios({
                             method: 'post',
                             url:    vm.appUrl + '/access_token',
                             data:   {
-                                access_token: vm.access_token,
+                                access_token: access_token,
                             },
                         }).then(function (response) {
                             console.log(response.data);
