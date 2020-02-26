@@ -1,116 +1,85 @@
 @extends('layouts.app')
 
 @section('content')
-    <div class="container" id="scope">
-        <!-- Button to Open the Modal -->
-        <button id="newProfileButton" type="button" class="btn btn-secondary btn-block" data-toggle="modal" data-target="newProfile" v-on:click="openModal" autofocus>
-            New Profile
+
+    <div class="row justify-content-center" id="app">
+        <h2 class="col-sm-12 text-center"> Authorize Account Creation</h2>
+        <button class="btn btn-primary col-sm-8 m-1" data-toggle="modal" data-target="newProfile" v-on:click="createRequestToken" autofocus>
+            Step 1
         </button>
-
-        @foreach($profiles as $profile)
-            <a class="btn btn-primary btn-block" href="/profile/{{$profile->id}}" role="button">{{ $profile->title }}</a>
-    @endforeach
-
-    <!-- Create client modal start -->
-        <div class="modal" id="newProfile">
-            <div class="modal-dialog">
-                <div class="modal-content">
-                    <!-- Modal Header -->
-                    <div class="modal-header">
-                        <h4 class="modal-title">New Profile</h4>
-                        <button type="button" class="close" data-dismiss="modal">&times;</button>
-                    </div>
-
-                    <!-- Modal body -->
-                    <div class="modal-body">
-                        <!--Input start -->
-                        <div class="form-group">
-                            <label for="name" class="control-label">Name</label>
-                            <div class="input-group">
-                                <input v-model="profileName" name="name" type="text" class="form-control" id="name" required>
-                            </div>
-                        </div>
-                        <!--Input end -->
-                    </div>
-
-                    <!-- Modal footer -->
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-danger" data-dismiss="modal">Fechar</button>
-                        <button type="button" class="btn btn-primary" v-on:click="addProfile">Salvar</button>
-                    </div>
-                </div>
-            </div>
-        </div>
-        <!-- Create client modal end -->
+        <button class="btn btn-primary col-sm-8 m-1" data-toggle="modal" data-target="newProfile" v-on:click="fetchAccessToken" autofocus>
+            Step 2
+        </button>
     </div>
+
 @endsection
 
 @section('javascript')
     <script>
-
         new Vue({
-            el:      '#scope',
+            el:      '#app',
             data:    {
-                profileName:       '',
+                authorizationLoaded:    true,
+                readAccessToken:        '{{ env('TMDB_READ_ACCESS_TOKEN') }}',
+                appUrl:                 '{{ env('APP_URL') }}' + '/home',
+                authorizedRequestToken: window.location.pathname.split('/')[2],
+                request_token:          '',
+                access_token:           '',
+            },
+            created: function () {
             },
             methods: {
-                addProfile: function () {
-                    axios.post('/profile', {
-                        formData: this.profileName,
+                createRequestToken: function () {
+                    vm = this;
+                    this.authorizationLoaded = false;
+                    // 1. Create new request token
+                    axios({
+                        method:          'post',
+                        url:             'https://api.themoviedb.org/4/auth/request_token',
+                        withCredentials: false,
+                        headers:         {
+                            'Content-Type':  "application/json;charset=utf-8",
+                            'Authorization': "Bearer " + this.readAccessToken,
+                        },
                     }).then(function (response) {
-                        // console.log('profile with id: ' + response.data + ' saved');
-                        let profile_id = response.data;
-                        $("#newProfile").modal('hide');
-                        // 1. Create a new request token
-                        axios.get('https://api.themoviedb.org/3/authentication/token/new?api_key=' + '{{ env('TMDB_API_KEY') }}')
-                            .then(function (response) {
-                                let request_token = response.data.request_token;
-                                // console.log('request token: ' + request_token);
-                                // 2. authorize the request token
-                                axios.post('https://api.themoviedb.org/3/authentication/token/validate_with_login?api_key=' + '{{ env('TMDB_API_KEY') }}', {
-                                    "username":      '{{ env('TMDB_USERNAME') }}',
-                                    "password":      '{{ env('TMDB_PASSWORD') }}',
-                                    "request_token": request_token,
-                                })
-                                    .then(function (response) {
-                                        // console.log('authorized request token: ' + response.data.request_token);
-                                        // 3. create new session_id with authorized token
-                                        axios.post('https://api.themoviedb.org/3/authentication/session/new?api_key=' + '{{ env('TMDB_API_KEY') }}', {
-                                            "request_token": request_token
-                                        })
-                                            .then(function (response) {
-                                                // console.log(response.data.success);
-                                                let session_id = response.data.session_id;
-                                                // 4. save session_id to the profile table inside local database
-                                                axios.put('/profile', {
-                                                    "session_id": session_id,
-                                                    "profile_id": profile_id,
-                                                })
-                                                    .then(function (response) {
-                                                        // console.log(response.data);
-                                                        location.reload();
-                                                    })
-                                                    .catch(function (error) {
-                                                        console.log(error);
-                                                    });
-                                            })
-                                            .catch(function (error) {
-                                                console.log(error);
-                                            });
-                                    })
-                                    .catch(function (error) {
-                                        console.log(error);
-                                    });
-                            });
+                        // 2. Send the user to TMDb asking the user to approve the token
+                        console.log(response.data.request_token);
+                        vm.request_token = response.data.request_token;
+                        window.open('https://www.themoviedb.org/auth/access?request_token=' + response.data.request_token);
                     }).catch(function (error) {
-                        alert('Unable to create the profile');
+                        console.log(error);
                     });
                 },
-                openModal:  function () {
-                    $('#newProfile').modal('show');
-                }
-            }
+                fetchAccessToken:   function () {
+                    let vm = this;
+                    axios({
+                        method:          'post',
+                        url:             'https://api.themoviedb.org/4/auth/access_token\n',
+                        data:            {
+                            request_token: this.request_token,
+                        },
+                        withCredentials: false,
+                        headers:         {
+                            'Content-Type':  "application/json;charset=utf-8",
+                            'Authorization': "Bearer " + this.readAccessToken,
+                        },
+                    }).then(function (response) {
+                        vm.access_token = (response.data.access_token);
+                        axios({
+                            method:          'post',
+                            url:             vm.appUrl + '/access_token',
+                            data:            {
+                                access_token: vm.access_token,
+                            },
+                        }).then(function (response) {
+                            console.log(response.data);
+                        });
+                    }).catch(function (error) {
+                        console.log('Could not save access token, error= ');
+                        console.log(error);
+                    });
+                },
+            },
         });
-
     </script>
 @endsection
