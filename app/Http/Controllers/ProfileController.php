@@ -20,9 +20,12 @@ class ProfileController extends Controller
 
     public function index($profile_id)
     {
-        $movies = Profile::find($profile_id)->movies;
+        $profile = Profile::find($profile_id);
+        $movies  = $profile->movies;
+        $user_id = auth()->user()->id;
+        $user    = User::find($user_id);
 
-        return view('pages.profile')->with('movies', $movies);
+        return view('pages.profile')->with('movies', $movies)->with('user', $user)->with('profile', $profile);
     }
 
     public function store(Request $request)
@@ -50,5 +53,4 @@ class ProfileController extends Controller
 
         return "saved session: $profile->session_id into profile with id: $profile_id";
     }
-
 }
