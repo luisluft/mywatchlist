@@ -53,4 +53,11 @@ class ProfileController extends Controller
 
         return "saved session: $profile->session_id into profile with id: $profile_id";
     }
+
+    public function delete(Request $request)
+    {
+        $profile_id = $request->profile_id;
+        Profile::where('list_id', $profile_id)->delete();
+        return response("successfully deleted list with id = $profile_id", 200);
+    }
 }

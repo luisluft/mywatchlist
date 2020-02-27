@@ -133,7 +133,7 @@
                     }).then(function (response) {
                         // removes the movie added from the search results frontend
                         vm.items.results.splice(index, 1);
-                        this.fetchList();
+                        vm.fetchList();
                     }).catch(function (error) {
                         console.log(error);
                     });

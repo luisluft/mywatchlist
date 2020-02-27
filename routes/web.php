@@ -27,6 +27,7 @@ Route::post('home/access_token', 'HomeController@saveAccessToken')->name('put.ac
 
 Route::post('profile', 'ProfileController@store')->name('profile.store');
 
+Route::delete('profile', 'ProfileController@delete')->name('profile.delete');
 
 Route::post('profile/data', 'ProfileController@getProfileData')->name('profiles.getProfileData');
 

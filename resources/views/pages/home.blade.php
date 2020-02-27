@@ -16,8 +16,8 @@
     <!--Display normal page once user has access token-->
         @if($user->access_token)
         <!-- Button to Open the Modal -->
-            <div class="col-sm-8 text-center">
-                <button id="newProfileButton" type="button" class="btn btn-secondary btn-block m-1" v-on:click="openModal" autofocus>
+            <div class="col-sm-8">
+                <button id="newProfileButton" type="button" class="btn btn-secondary btn-block" v-on:click="openModal" autofocus>
                     New Profile
                 </button>
             </div>
@@ -26,6 +26,9 @@
                 <div class="col-sm-8 text-center">
                     <a class="btn btn-primary btn-block m-1" href="/profile/{{$profile->id}}" role="button">{{ $profile->title }}</a>
                 </div>
+                <button id="deleteProfile" type="button" class="btn btn-danger btn-block col-sm-3 m-1" v-on:click="deleteList({{$profile->list_id}})" autofocus>
+                    Delete Profile
+                </button>
             @endforeach
 
         <!-- Modal start -->
@@ -53,7 +56,7 @@
                         <!-- Modal footer -->
                         <div class="modal-footer">
                             <button type="button" class="btn btn-danger" data-dismiss="modal">Fechar</button>
-                            <button type="button" class="btn btn-primary" v-on:click="addProfile">Salvar</button>
+                            <button type="button" class="btn btn-primary" v-on:click="addList">Salvar</button>
                         </div>
                     </div>
                 </div>
@@ -78,7 +81,40 @@
                 api_base_url:        '{{ env('TMDB_BASE_URL') }}',
             },
             methods: {
-                addProfile:         function () {
+                deleteProfile:      function (list_id) {
+                    // delete profile from local database
+                    axios({
+                        method: 'delete',
+                        url:    '{{ route('profile.delete') }}',
+                        data:   {
+                            profile_id: list_id,
+                        }
+                    }).then(function (response) {
+                        console.log(response);
+                        document.location.reload(true);
+                    }).catch(function (error) {
+                        console.log(error);
+                    });
+                },
+                deleteList:         function (list_id) {
+                    let vm = this;
+                    axios({
+                        method:  'delete',
+                        url:     this.api_base_url + '/list/' + list_id,
+                        headers: {
+                            'content-type':  'application/json;charset=utf-8',
+                            'authorization': 'Bearer ' + this.access_token,
+                        },
+                        data:    {
+                            list_id: list_id,
+                        }
+                    }).then(function (response) {
+                        vm.deleteProfile(list_id);
+                    }).catch(function (error) {
+                        console.log(error);
+                    });
+                },
+                addList:            function () {
                     let vm = this;
                     axios({
                         method:  'post',
@@ -92,7 +128,6 @@
                             'content-type':  'application/json;charset=utf-8',
                             'authorization': 'Bearer ' + vm.access_token,
                         },
-
                     }).then(function (response) {
                         //    saves the new list to the database table profiles
                         let list_id = response.data.id;
