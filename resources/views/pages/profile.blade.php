@@ -11,18 +11,18 @@
         </div>
 
         <!--displays all movies already added to list-->
-    <div class="row justify-content-start mt-2">
-        <div class="card col-sm-3" v-for="(item, index) in movies.results">
-            <img class="card-img-top mt-2" :src="imageUrl + item.poster_path" alt="item.original_title">
-            <button id="removeWatchlater" class="btn btn-danger" v-on:click="removeWatchlater(item.id, index); fetchList();">
-                Remove
-            </button>
-            <div class="card-body">
-                <h5 class="card-title">@{{ item.original_title }}</h5>
-                <p class="card-text">@{{ item.overview }}</p>
+        <div class="row justify-content-start mt-2">
+            <div class="card col-sm-3" v-for="(item, index) in user_list.results">
+                <img class="card-img-top mt-2" :src="imageUrl + item.poster_path" alt="image not found">
+                <button id="removeFromList" class="btn btn-danger" v-on:click="removeFromList(item.id, index); fetchList();">
+                    Remove
+                </button>
+                <div class="card-body">
+                    <h5 class="card-title">@{{ item.original_title }}</h5>
+                    <p class="card-text">@{{ item.overview }}</p>
+                </div>
             </div>
         </div>
-    </div>
 
         <!-- modal start -->
         <div class="modal" id="search">
@@ -65,7 +65,7 @@
                 profileName:  '',
                 queryString:  '',
                 items:        [],
-                movies:       [],
+                user_list:    [],
                 imageUrl:     'https://image.tmdb.org/t/p/w500',
                 baseUrl:      'https://api.themoviedb.org/4',
                 apiKey:       '{{ env('TMDB_API_KEY') }}',
@@ -78,7 +78,7 @@
                 this.fetchList();
             },
             methods: {
-                fetchList:        function () {
+                fetchList:      function () {
                     // Make a request for a user with a given ID
                     let vm = this;
                     // TODO get all pages from the request by reading the amount of pages fetched with the response
@@ -91,13 +91,13 @@
                         },
                     }).then(function (response) {
                         // handle success
-                        vm.movies = response.data;
+                        vm.user_list = response.data;
                     }).catch(function (error) {
                         // handle error
                         console.log(error);
                     });
                 },
-                searchMovie:      function () {
+                searchMovie:    function () {
                     $('#search').modal('show');
                     let vm = this;
                     let url = this.baseUrl + '/search/movie?api_key=' + this.apiKey + '&language=en-US&query=' + this.queryString + '&include_adult=false';
@@ -113,10 +113,36 @@
                             console.log(error);
                         });
                 },
-                addToList:        function (mediaId, index) {
+                addToList:      function (mediaId, index) {
                     let vm = this;
                     axios({
-                        method: 'post',
+                        method:  'post',
+                        url:     this.baseUrl + '/list/' + this.list_id + '/items',
+                        headers: {
+                            'content-type':  'application/json;charset=utf-8',
+                            'authorization': 'Bearer ' + vm.access_token,
+                        },
+                        data:    {
+                            "items": [
+                                {
+                                    "media_type": "movie",
+                                    "media_id":   mediaId
+                                }
+                            ]
+                        }
+                    }).then(function (response) {
+                        // removes the movie added from the search results frontend
+                        vm.items.results.splice(index, 1);
+                        this.fetchList();
+                    }).catch(function (error) {
+                        console.log(error);
+                    });
+                },
+                removeFromList: function (mediaId, index) {
+                    // removes the movie added to watchlater from the search results frontend
+                    let vm = this;
+                    axios({
+                        method: 'delete',
                         url:    this.baseUrl + '/list/' + this.list_id + '/items',
                         headers: {
                             'content-type':  'application/json;charset=utf-8',
@@ -131,22 +157,7 @@
                             ]
                         }
                     }).then(function (response) {
-                        // removes the movie added from the search results frontend
-                        vm.items.results.splice(index,1);
-                    }).catch(function (error) {
-                        console.log(error);
-                    });
-                },
-                removeWatchlater: function (mediaId, index) {
-                    // removes the movie added to watchlater from the search results frontend
-                    let url = this.baseUrl + '/account/' + this.user_id + '/watchlist?api_key=' + this.apiKey + '&session_id=' + this.session_id;
-
-                    axios.post(url, {
-                        "media_type": "movie",
-                        "media_id":   mediaId,
-                        "watchlist":  false
-                    }).then(function (response) {
-                        // this.items.splice(index,1);
+                        vm.fetchList();
                     }).catch(function (error) {
                         console.log(error);
                     });
