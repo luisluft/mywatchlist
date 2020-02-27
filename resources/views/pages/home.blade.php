@@ -1,34 +1,36 @@
 @extends('layouts.app')
 
 @section('content')
-    <div class="row justify-content-center" id="app">
+    <div id="app">
         {{--Display authorization steps only if user has not yet authorized--}}
         @if(!$user->access_token)
-            <h2 class="col-sm-12 text-center"> Authorize Account Creation</h2>
-            <button class="btn btn-primary col-sm-8 m-1" data-toggle="modal" data-target="newProfile" v-on:click="createRequestToken" autofocus>
-                Step 1
-            </button>
-            <button class="btn btn-primary col-sm-8 m-1" data-toggle="modal" data-target="newProfile" v-on:click="fetchAccessToken" autofocus>
-                Step 2
-            </button>
+            <div class="row justify-content-center">
+                <h2 class="col-sm-12 text-center"> Authorize Account Creation</h2>
+                <button class="btn btn-primary col-6 m-1" data-toggle="modal" data-target="newProfile" v-on:click="createRequestToken" autofocus>
+                    Step 1
+                </button>
+                <button class="btn btn-primary col-6 m-1" data-toggle="modal" data-target="newProfile" v-on:click="fetchAccessToken" autofocus>
+                    Step 2
+                </button>
+            </div>
         @endif
 
     <!--Display normal page once user has access token-->
         @if($user->access_token)
         <!-- Button to Open the Modal -->
-            <div class="col-sm-8">
-                <button id="newProfileButton" type="button" class="btn btn-secondary btn-block" v-on:click="openModal" autofocus>
+            <div class="row justify-content-center">
+                <button id="newProfileButton" type="button" class="btn btn-secondary btn-block col-10 mb-1" v-on:click="openModal" autofocus>
                     New Profile
                 </button>
             </div>
 
             @foreach($profiles as $profile)
-                <div class="col-sm-8 text-center">
-                    <a class="btn btn-primary btn-block m-1" href="/profile/{{$profile->id}}" role="button">{{ $profile->title }}</a>
+                <div class="row justify-content-center">
+                    <a class="btn btn-primary btn-block m-1 col-8" type="button" href="/profile/{{$profile->id}}">{{ $profile->title }}</a>
+                    <button id="deleteProfile" type="button" class="btn btn-danger btn-block col-2 m-1" v-on:click="deleteList({{$profile->list_id}})">
+                        Delete Profile
+                    </button>
                 </div>
-                <button id="deleteProfile" type="button" class="btn btn-danger btn-block col-sm-3 m-1" v-on:click="deleteList({{$profile->list_id}})" autofocus>
-                    Delete Profile
-                </button>
             @endforeach
 
         <!-- Modal start -->

@@ -4,7 +4,7 @@
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
 
-        <title>Laravel</title>
+        <title>{{ config('app.name', 'Laravel') }}</title>
 
         <!-- Fonts -->
         <link href="https://fonts.googleapis.com/css?family=Nunito:200,600" rel="stylesheet">
@@ -81,11 +81,11 @@
 
             <div class="content">
                 <div class="title m-b-md">
-                    Laravel
+                    My Watch List
                 </div>
 
                 <div class="links">
-                    <img src="{{asset('storage/tmdb-logo.png')}}" alt="Flowers in Chania">
+                    <img class="img-responsive" src="{{asset('storage/tmdb-logo.png')}}" alt="tmdb-logo.png">
                 </div>
 
             </div>
