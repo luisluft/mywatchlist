@@ -17,7 +17,7 @@ class CreateProfilesTable extends Migration
             $table->bigIncrements('id');
             $table->unsignedBigInteger('user_id');
             $table->string('list_id'); // used by tmdb api to store media in a list
-            $table->text('title');
+            $table->string('title');
             $table->timestamps();
         });
     }
